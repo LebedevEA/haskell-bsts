@@ -1,1 +1,1 @@
-# haskell-bsts
+# Haskell BSTs
