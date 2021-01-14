@@ -1,121 +1,87 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module AVL where
+module AVL (
+  BST,
+  AVL
+) where
 
-data Tree a = None 
-            | Branch (Tree a) a (Tree a)
-            deriving (Eq, Show)
-
-type TreeZ a = (a, Context a)
-
--- tleft :: Tree a -> Tree a
--- tleft (Branch l _ _) = l
--- tleft None = error "tleft: called on None"
-
--- tright :: Tree a -> Tree a
--- tright (Branch _ _ r) = r
--- tright None = error "tright: called on None"
-
-data Context a = Context (Tree a) (Tree a) [(Dir, a, Tree a)]
-               deriving (Eq, Show)
-
-data Dir = L 
-         | R 
-         deriving (Eq, Show)
-
-mktz :: Tree a -> TreeZ a
-mktz (Branch l a r) = (a, Context l r [])
-
-left :: TreeZ a -> TreeZ a
-left (a, Context (Branch ll la lr) r ts) = (la, Context ll lr $ (L, a, r):ts)
-
-right :: TreeZ a -> TreeZ a
-right (a, Context l (Branch rl ra rr) ts) = (ra, Context rl rr $ (R, a, l):ts)
-
-up :: TreeZ a -> TreeZ a
-up (a, Context l r ((dir, oa, ot):ts)) =
-  case dir of
-    L -> (oa, Context (Branch l a r) ot ts)
-    R -> (oa, Context ot (Branch l a r) ts)
-
-untz :: TreeZ a -> Tree a
-untz (a, Context l r []) = Branch l a r
-untz tz                  = untz $ up tz
-
-
-
-class BST m where
-  add :: (Ord a) => m a -> a -> m a
-  del :: (Ord a) => m a -> a -> m a
-  bempty :: (Ord a) => m a
-
-
-
-data Node a = Node { 
-  nelem :: a, 
-  nheight :: Int, 
-  ncounter :: Int
-}
-
-mkTree :: a -> Tree (Node a)
-mkTree a = Branch None (Node a 1 1) None
-
-incCounter :: Node a -> Node a
-incCounter node = Node (nelem node) (nheight node) (ncounter node + 1)
-
-
-theight :: Tree (Node a) -> Int
-theight None = 0
-theight (Branch _ node _) = nheight node
-
-zfixheight :: TreeZ (Node a) -> TreeZ (Node a)
-zfixheight (node, Context l r list) = (fixed, Context l r list)
-  where lh = theight l
-        rh = theight r
-        fixed = Node (nelem node) (1 + max lh rh) (ncounter node)
-
-tfixheight :: Tree (Node a) -> Tree (Node a)
-tfixheight t = untz $ zfixheight $ mktz t
-
-
+import BST
 
 newtype AVL a = AVL (Tree (Node a))
+              deriving (Eq,Show)
 
 instance BST AVL where
   add :: (Ord a) => AVL a -> a -> AVL a
+  add (AVL None) el = AVL $ mkTree el
   add (AVL tree) el = AVL $ balance $ insert el $ mktz tree
-  del :: (Ord a) => AVL a -> a -> AVL a
-  del = undefined
-  bempty :: (Ord a) => AVL a
-  bempty = AVL None
+  -- del :: (Ord a) => AVL a -> a -> AVL a
+  -- del = undefined
+  size :: (Ord a) => AVL a -> Int
+  size (AVL None) = 0
+  size (AVL (Branch _ node _)) = nsize node
+  bstempty :: (Ord a) => AVL a
+  bstempty = AVL None
+  kthelem :: (Ord a) => Int -> AVL a -> a
+  kthelem k (AVL tree)
+    | (tsize l < (k + 1)) &&
+      (tsize l + ncounter (root tree) >= (k + 1)) 
+        = nelem $ root tree 
+    | tsize l >= (k + 1) 
+        = kthelem k (AVL $ tleft tree)
+    | otherwise 
+        = kthelem (k - tsize l - ncounter (root tree)) (AVL $ tright tree)
+        where l = tleft tree
 
 data Balance = BRL | RL | Ok | RR | BRR
+             deriving (Eq, Show)
 
-isbalanced :: (Node a, Context (Node a)) -> Balance
-isbalanced (_, Context l r _) 
-  | abs (theight l - theight r) <= 1 = Ok
-  | theight l > theight r = undefined
-  | otherwise = undefined
+howbalanced :: (Node a, Context (Node a)) -> Balance
+howbalanced (_, Context l r _) 
+  | abs (theight l - theight r) <= 1 
+    = Ok
+  | theight l > theight r
+    = if theight (tleft l) > theight (tright l)
+      then RR
+      else BRR
+  | otherwise
+    = if theight (tright r) > theight (tleft r)
+      then RL
+      else BRL
+
+fixbalance :: TreeZ (Node a) -> TreeZ (Node a)
+fixbalance tz@(node, Context l r list) =
+  case howbalanced tz of
+    BRL -> zrotateLeft (node, Context l (trotateRight r) list)
+    RL -> zrotateLeft tz
+    Ok -> tz
+    RR -> zrotateRight tz
+    BRR -> zrotateRight (node, Context (trotateLeft l) r list)
 
 balance :: TreeZ (Node a) -> Tree (Node a)
 balance tz = untz $ bups tz
-  where bups = undefined -- balanced ups...
+  where bups z@(_, Context _ _ []) = zfixheight $ fixbalance z
+        bups z = bups $ up $ zfixheight $ fixbalance z
 
 -- https://upload.wikimedia.org/wikipedia/commons/3/31/Tree_rotation_animation_250x250.gif
-rotateRight :: TreeZ (Node a) -> TreeZ (Node a)
-rotateRight (node, Context l r list) = zfixheight (a, Context alpha newB list)
+zrotateRight :: TreeZ (Node a) -> TreeZ (Node a)
+zrotateRight (node, Context l r list) = zfixheight (a, Context alpha newB list)
   where b = node
         Branch alpha a beta = l
         gamma = r
         newB = tfixheight $ Branch beta b gamma
 
-rotateLeft :: TreeZ (Node a) -> TreeZ (Node a)
-rotateLeft (node, Context l r list) = zfixheight (b, Context alpha gamma list)
+trotateRight :: Tree (Node a) -> Tree (Node a)
+trotateRight t = untz $ zrotateRight $ mktz t
+
+zrotateLeft :: TreeZ (Node a) -> TreeZ (Node a)
+zrotateLeft (node, Context l r list) = zfixheight (b, Context newA gamma list)
   where a = node
         alpha = l
         Branch beta b gamma = r
         newA = tfixheight $ Branch alpha a beta
 
+trotateLeft :: Tree (Node a) -> Tree (Node a)
+trotateLeft t = untz $ zrotateLeft $ mktz t
 
 insert :: Ord a => a -> TreeZ (Node a) -> TreeZ (Node a)
 insert elem (node, cntx) 
