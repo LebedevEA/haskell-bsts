@@ -1,10 +1,11 @@
 module Test where
 
-import Test.HUnit
-import TestAVL
+import Test.HUnit ( runTestTT, Test(TestLabel, TestList) )
+import TestAVL ( testAVL )
 import Control.DeepSeq (NFData(rnf))
-import Data.Time
+import Data.Time ( diffUTCTime, getCurrentTime )
 
+cortests :: Test
 cortests = TestList [TestLabel "AVL1" (testAVL 512521 1000),
                      TestLabel "AVL2" (testAVL 277189 2000),
                      TestLabel "AVL3" (testAVL 381835 3000)]
