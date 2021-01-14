@@ -82,17 +82,3 @@ zrotateLeft (node, Context l r list) = zfixheight (b, Context newA gamma list)
 
 trotateLeft :: Tree (Node a) -> Tree (Node a)
 trotateLeft t = untz $ zrotateLeft $ mktz t
-
-insert :: Ord a => a -> TreeZ (Node a) -> TreeZ (Node a)
-insert elem (node, cntx) 
-  | elem == nelem node = (incCounter node, cntx)
-  | elem < nelem node = 
-    case cntx of
-      Context None r list -> left (node, Context l r list)
-        where l = mkTree elem
-      _ -> insert elem $ left (node, cntx)
-  | otherwise = 
-    case cntx of
-      Context l None list -> right (node, Context l r list)
-        where r = mkTree elem
-      _ -> insert elem $ right (node, cntx)

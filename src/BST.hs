@@ -42,7 +42,7 @@ up (a, Context l r ((dir, oa, ot):ts)) =
 
 untz :: TreeZ a -> Tree a
 untz (a, Context l r []) = Branch l a r
-untz tz                  = untz $ up tz
+untz tz = untz $ up tz
 
 class BST m where
   add :: (Ord a) => m a -> a -> m a
@@ -85,3 +85,17 @@ zfixheight (node, Context l r list) = (fixed, Context l r list)
 
 tfixheight :: Tree (Node a) -> Tree (Node a)
 tfixheight t = untz $ zfixheight $ mktz t
+
+insert :: Ord a => a -> TreeZ (Node a) -> TreeZ (Node a)
+insert elem (node, cntx) 
+  | elem == nelem node = (incCounter node, cntx)
+  | elem < nelem node = 
+    case cntx of
+      Context None r list -> left (node, Context l r list)
+        where l = mkTree elem
+      _ -> insert elem $ left (node, cntx)
+  | otherwise = 
+    case cntx of
+      Context l None list -> right (node, Context l r list)
+        where r = mkTree elem
+      _ -> insert elem $ right (node, cntx)
