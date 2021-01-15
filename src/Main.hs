@@ -1,7 +1,7 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE NumericUnderscores #-}
 
-module Test where
+module Main where
 
 import Test.HUnit ( runTestTT, Test(TestLabel, TestList) )
 import TestBST
