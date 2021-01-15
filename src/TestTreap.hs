@@ -1,6 +1,9 @@
-module TestTreap where
+module TestTreap (
+  testCorTreap,
+  testSpeedTreap
+) where
 
-import TestBST ( testBST )
+import TestBST
 import BST
 import Treap
 import Test.HUnit(Test(TestCase),  Assertion )
@@ -8,5 +11,8 @@ import Test.HUnit(Test(TestCase),  Assertion )
 treap :: Treap Int 
 treap = bstempty
 
-testTreap :: Int -> Int -> Test
-testTreap n = TestCase . testBST treap n
+testCorTreap :: Int -> Int -> Test
+testCorTreap n = TestCase . testCorBST treap n
+
+testSpeedTreap :: Int -> Int -> Test
+testSpeedTreap n = TestCase . testSpeedBST treap n

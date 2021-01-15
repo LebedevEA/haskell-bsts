@@ -1,6 +1,9 @@
-module TestAVL where
+module TestAVL (
+  testCorAVL,
+  testSpeedAVL
+) where
 
-import TestBST ( testBST )
+import TestBST
 import BST
 import AVL
 import Test.HUnit(Test(TestCase),  Assertion )
@@ -8,5 +11,8 @@ import Test.HUnit(Test(TestCase),  Assertion )
 avl :: AVL Int 
 avl = bstempty
 
-testAVL :: Int -> Int -> Test
-testAVL n = TestCase . testBST avl n
+testCorAVL :: Int -> Int -> Test
+testCorAVL n = TestCase . testCorBST avl n
+
+testSpeedAVL :: Int -> Int -> Test
+testSpeedAVL n = TestCase . testSpeedBST avl n
