@@ -60,7 +60,7 @@ main = do
   let naive20s = (showGFloat (Just 2) $ naive20) ""
 
   putStrLn ""
-  putStrLn   "BST   | 3x10k | 3x100k"
+  putStrLn   "BST   | 3x20k | 3x100k"
   putStrLn $ "Naive | " ++ naive20s ++ "s | ..."
   putStrLn $ "AVL   | " ++ avl20s   ++ "s | " ++ avl100s ++ "s"
   putStrLn $ "Splay | " ++ splay20s ++ "s | " ++ splay100s ++ "s"
