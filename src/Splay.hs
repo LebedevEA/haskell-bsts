@@ -14,11 +14,14 @@ instance BST Splay where
   add :: (Ord a) => Splay a -> a -> Splay a
   add (Splay None) el = Splay $ mkTree el
   add (Splay tree) el = Splay $ splay $ insert el $ mktz tree
+  
   size :: (Ord a) => Splay a -> Int
   size (Splay None) = 0
   size (Splay (Branch _ node _)) = nsize node
+
   bstempty :: (Ord a) => Splay a
   bstempty = Splay None
+  
   kthelem :: (Ord a) => Int -> Splay a -> a
   kthelem k (Splay tree)
     | (tsize l < (k + 1)) &&

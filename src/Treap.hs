@@ -39,11 +39,14 @@ instance BST Treap where
     where (l,r') = split (<) a tree
           (mid,r) = split (<=) a r'
           (nt,gen') = mkTree gen a
+          
   size :: (Ord a) => Treap a -> Int
   size (Treap (None,_)) = 0
   size (Treap (Branch _ node _,_)) = nsize node
+
   bstempty :: (Ord a) => Treap a
   bstempty = Treap (None,mkStdGen 5338)
+  
   kthelem :: (Ord a) => Int -> Treap a -> a
   kthelem k (Treap (tree,gen))
       | (tsize l < (k + 1)) &&

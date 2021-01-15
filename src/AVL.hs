@@ -14,13 +14,14 @@ instance BST AVL where
   add :: (Ord a) => AVL a -> a -> AVL a
   add (AVL None) el = AVL $ mkTree el
   add (AVL tree) el = AVL $ balance $ insert el $ mktz tree
-  -- del :: (Ord a) => AVL a -> a -> AVL a
-  -- del = undefined
+  
   size :: (Ord a) => AVL a -> Int
   size (AVL None) = 0
   size (AVL (Branch _ node _)) = nsize node
+
   bstempty :: (Ord a) => AVL a
   bstempty = AVL None
+  
   kthelem :: (Ord a) => Int -> AVL a -> a
   kthelem k (AVL tree)
     | (tsize l < (k + 1)) &&
